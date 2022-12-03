@@ -8,6 +8,16 @@ export default class Replay {
     timeStart: number;
     timeEnd: number;
 
+    scnFilename: string;
+    aiwFilename: string;
+    modName: string;
+    modVersion: string;
+    modUid: string;
+    trackPath: string;
+
+    sessionType: SessionType;
+    isPrivateSession: boolean;
+
     private data: Uint8Array;
     private consumeIndex: number = 0;
     private bufferIndex: number = 0;
@@ -34,17 +44,17 @@ export default class Replay {
     private readReplayInfo() {
         const rfm = this.readString();
         this.skip(4); // Unknown
-        const modInfo = this.readString();
-        const scnFilename = this.readString()
-        const aiwFilename = this.readString()
-        const modName = this.readString(2)
-        const modVersion = this.readString(2)
-        const modUid = this.readString(2)
-        const trackPath = this.readString(2)
+        const modInfo = this.readString(); // TODO Parse
+        this.scnFilename = this.readString()
+        this.aiwFilename = this.readString()
+        this.modName = this.readString(2)
+        this.modVersion = this.readString(2)
+        this.modUid = this.readString(2)
+        this.trackPath = this.readString(2)
 
         this.skip(1); // Unknown
 
-        const [sessionType, isPrivateSession] = this.readSessionInfo();
+        [this.sessionType, this.isPrivateSession] = this.readSessionInfo();
 
         this.skip(67); // Unknown
     }
