@@ -2,7 +2,7 @@
 export default class Replay {
 
     version: string;
-    drivers: Array<Driver> = [];
+    drivers: Array<Driver>;
     sliceCount: number;
     eventCountTotal: number;
     timeStart: number;
@@ -19,11 +19,13 @@ export default class Replay {
     isPrivateSession: boolean;
 
     private data: Uint8Array;
-    private consumeIndex: number = 0;
-    private bufferIndex: number = 0;
+    private consumeIndex: number;
+    private bufferIndex: number;
 
     constructor(data: Uint8Array) {
         this.data = data;
+        this.consumeIndex = 0;
+        this.bufferIndex = 0;
         this.readVcrHeader();
         this.readReplayInfo();
         this.readDriverList();
@@ -81,6 +83,7 @@ export default class Replay {
     }
 
     private readDriverList() {
+        this.drivers = [];
         const driverCount = this.readInteger();
         for (let i = 0; i < driverCount; ++i) {
             const number = this.readInteger(1);
