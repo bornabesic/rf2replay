@@ -10,7 +10,7 @@
   let worker = new MainWorker();
   setContext("worker", worker);
 
-  let replay = null;
+  let replay: Replay = null;
 
   function onFileLoaded(event: CustomEvent<Uint8Array>) {
     const data = event.detail;

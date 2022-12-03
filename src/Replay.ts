@@ -1,9 +1,9 @@
 
 export default class Replay {
 
-    data: Uint8Array;
     version: string;
 
+    private data: Uint8Array;
     private consumeIndex: number = 0;
     private bufferIndex: number = 0;
 
