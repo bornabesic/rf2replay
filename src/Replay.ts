@@ -2,6 +2,7 @@
 export default class Replay {
 
     version: string;
+    drivers: Array<Driver> = [];
 
     private data: Uint8Array;
     private consumeIndex: number = 0;
@@ -11,6 +12,7 @@ export default class Replay {
         this.data = data;
         this.readVcrHeader();
         this.readReplayInfo();
+        this.readDriverList();
     }
 
     private readVcrHeader() {
@@ -61,6 +63,55 @@ export default class Replay {
 
         const isPrivateSession = (sessionInfo >> 7 & 1) == 1;
         return [sessionType, isPrivateSession];
+    }
+
+    private readDriverList() {
+        const driverCount = this.readInteger();
+        for (let i = 0; i < driverCount; ++i) {
+            const number = this.readInteger(1);
+            const name = this.readString(1);
+            const codriverName = this.readString(1) || null;
+            const vehicleName = this.readString(2);
+            const vehicleVersion = this.readString(2);
+            const vehicleId = this.readString(2);
+            const vehicleFilename = this.readNullTerminatedString(32);
+
+            this.skip(49) // Unknown
+
+            let timeEntry = this.readFloat() // TODO
+            let timeExit = this.readFloat() // TODO
+            timeEntry = null;
+            timeExit = null;
+
+            this.drivers.push({
+                number,
+                name,
+                codriverName,
+                vehicleName,
+                vehicleVersion,
+                vehicleId,
+                vehicleFilename,
+                timeEntry,
+                timeExit,
+            } as Driver)
+        }
+    }
+
+    private readNullTerminatedString(maxBytes: number): string {
+        const end = this.consumeIndex + maxBytes - 1;
+        this.bufferIndex = this.consumeIndex;
+        let i = this.consumeIndex;
+        while (this.data[i] != 0) {
+            ++i;
+            if (i - this.consumeIndex > maxBytes) {
+                throw Error("Could not find null-terminated sting.");
+            }
+        }
+        this.consumeIndex = i;
+        const string = this.readStringWholeBuffer();
+        this.consumeIndex = end;
+        this.bufferIndex = this.consumeIndex;
+        return string;
     }
 
     private skip(size: number) {
@@ -142,4 +193,16 @@ enum SessionType {
     QUALIFYING,
     WARMUP,
     RACE,
+}
+
+class Driver {
+    number: number
+    name: string
+    codriverName: string
+    vehicleName: string
+    vehicleVersion: string
+    vehicleId: string
+    vehicleFilename: string
+    timeEntry: number
+    timeExit: number
 }

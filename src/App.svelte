@@ -16,6 +16,7 @@
     const data = event.detail;
     replay = new Replay(data);
     console.log("Replay version: " + replay.version);
+    console.log(replay.drivers);
   }
 </script>
 
