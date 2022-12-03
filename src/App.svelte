@@ -1,5 +1,6 @@
 <script lang="ts">
   import FilePicker from "./lib/FilePicker.svelte";
+  import Replay from "./Replay";
 
   // NOTE Firefox does not support import statements in web workers so it only works in the production build
   // https://github.com/vitejs/vite/issues/4586
@@ -9,9 +10,11 @@
   let worker = new MainWorker();
   setContext("worker", worker);
 
+  let replay = null;
+
   function onFileLoaded(event: CustomEvent<Uint8Array>) {
     const data = event.detail;
-    console.log("Data size: " + data.length);
+    replay = new Replay(data);
   }
 </script>
 

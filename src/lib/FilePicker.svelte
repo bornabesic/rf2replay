@@ -4,20 +4,24 @@
     const dispatch = createEventDispatcher();
     const worker: Worker = getContext("worker");
 
-    function onFileSelected(event: Event) {
-        const input = event.target as HTMLInputElement;
-        const file: File = input.files.item(0);
+    let fileInput: HTMLInputElement;
+
+    function onFileSelected() {
+        const file: File = fileInput.files.item(0);
+        fileInput.disabled = true;
         file.arrayBuffer().then((data: ArrayBuffer) => {
             const bytes = new Uint8Array(data);
             const isCompressed = bytes.at(0) === 0x1f && bytes.at(1) === 0x8b; // gzip magic
             if (!isCompressed) {
                 dispatch("fileLoaded", bytes);
+                fileInput.disabled = false;
             } else {
                 const onDecompressedBytes = (
                     event: MessageEvent<Uint8Array>
                 ) => {
                     const bytesDecompressed = event.data;
                     dispatch("fileLoaded", bytesDecompressed);
+                    fileInput.disabled = false;
                     worker.removeEventListener("message", onDecompressedBytes);
                 };
 
@@ -31,4 +35,4 @@
     }
 </script>
 
-<input type="file" on:change={onFileSelected} />
+<input type="file" bind:this={fileInput} on:change={onFileSelected} />
