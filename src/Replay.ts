@@ -119,6 +119,11 @@ export default class Replay {
         this.timeEnd = this.readFloat()
     }
 
+    [Symbol.iterator] = function* () {
+        // TODO Read slices and events
+        yield null;
+    }
+
     private readNullTerminatedString(maxBytes: number): string {
         const end = this.consumeIndex + maxBytes - 1;
         this.bufferIndex = this.consumeIndex;
