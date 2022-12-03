@@ -2,6 +2,7 @@
 export default class Replay {
 
     data: Uint8Array;
+    version: string;
 
     private consumeIndex: number = 0;
     private bufferIndex: number = 0;
@@ -19,7 +20,7 @@ export default class Replay {
         const gmbHeader = this.readStringWholeBuffer();
         this.expect(0x0A);
         this.expectString("IRSR");
-        const version = this.readFloat().toPrecision(3);
+        this.version = this.readFloat().toPrecision(3);
         // TODO
     }
 

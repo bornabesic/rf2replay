@@ -15,6 +15,7 @@
   function onFileLoaded(event: CustomEvent<Uint8Array>) {
     const data = event.detail;
     replay = new Replay(data);
+    console.log("Replay version: " + replay.version);
   }
 </script>
 
