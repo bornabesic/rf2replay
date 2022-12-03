@@ -1,9 +1,14 @@
 <script lang="ts">
-  // TODO
+  import FilePicker from "./lib/FilePicker.svelte";
+
+  function onFileLoaded(event: CustomEvent<ArrayBuffer>) {
+    const data = event.detail;
+    console.log("Data:" + data);
+  }
 </script>
 
 <main>
-  rF2 Replay
+  <FilePicker on:fileLoaded={onFileLoaded} />
 </main>
 
 <style>
