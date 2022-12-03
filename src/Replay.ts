@@ -37,9 +37,30 @@ export default class Replay {
 
         this.skip(1); // Unknown
 
-        // TODO sessionType, isPrivateSession = this.readSessionInfo()
+        const [sessionType, isPrivateSession] = this.readSessionInfo();
 
         this.skip(67); // Unknown
+    }
+
+    private readSessionInfo() {
+        const sessionInfo = this.readInteger(1)
+        const sessionTypeNumber = sessionInfo & 0xF;
+        let sessionType;
+        if (sessionTypeNumber == 0)
+            sessionType = SessionType.TEST_DAY;
+        else if (1 <= sessionTypeNumber && sessionTypeNumber <= 4)
+            sessionType = SessionType.PRACTICE;
+        else if (5 <= sessionTypeNumber && sessionTypeNumber <= 8)
+            sessionType = SessionType.QUALIFYING;
+        else if (sessionTypeNumber == 9)
+            sessionType = SessionType.WARMUP;
+        else if (10 <= sessionTypeNumber && sessionTypeNumber <= 13)
+            sessionType = SessionType.RACE;
+        else
+            throw Error(`Cannot convert number ${sessionTypeNumber} to a session type.`)
+
+        const isPrivateSession = (sessionInfo >> 7 & 1) == 1;
+        return [sessionType, isPrivateSession];
     }
 
     private skip(size: number) {
@@ -113,4 +134,12 @@ export default class Replay {
         }
         return bytes;
     }
+}
+
+enum SessionType {
+    TEST_DAY,
+    PRACTICE,
+    QUALIFYING,
+    WARMUP,
+    RACE,
 }
