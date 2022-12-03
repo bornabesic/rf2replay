@@ -3,6 +3,10 @@ export default class Replay {
 
     version: string;
     drivers: Array<Driver> = [];
+    sliceCount: number;
+    eventCountTotal: number;
+    timeStart: number;
+    timeEnd: number;
 
     private data: Uint8Array;
     private consumeIndex: number = 0;
@@ -13,6 +17,7 @@ export default class Replay {
         this.readVcrHeader();
         this.readReplayInfo();
         this.readDriverList();
+        this.readSlicesHeader();
     }
 
     private readVcrHeader() {
@@ -95,6 +100,13 @@ export default class Replay {
                 timeExit,
             } as Driver)
         }
+    }
+
+    private readSlicesHeader() {
+        this.sliceCount = this.readInteger()
+        this.eventCountTotal = this.readInteger()
+        this.timeStart = this.readFloat()
+        this.timeEnd = this.readFloat()
     }
 
     private readNullTerminatedString(maxBytes: number): string {
