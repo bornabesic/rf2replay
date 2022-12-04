@@ -122,9 +122,94 @@ export default class Replay {
         this.timeEnd = this.readFloat()
     }
 
-    [Symbol.iterator] = function* () {
-        // TODO Read slices and events
-        yield null;
+    *[Symbol.iterator]() {
+        for (let i = 0; i < this.sliceCount; ++i) {
+            const time = this.readFloat();
+            const eventCount = this.readInteger(2);
+
+            for (let j = 0; j < eventCount; ++j) {
+                const header = this.readInteger();
+
+                const eventSize = (header >> 8) & 0x1FF;
+                const eventClass = (header >> 29);
+                const eventType = (header >> 17) & 0x3F;
+                const eventDriver = header & 0xFF;
+
+                this.skip(1) // Unknown
+                this.ensureBytes(eventSize);
+                if (eventClass == 0 && 7 <= eventType && eventType <= 16) {
+                    const telemetry = this.readTelemetry()
+                    yield [time, eventDriver, telemetry];
+                }
+                else if (eventClass == 3 && eventType == 6) {
+                    const checkpoint = this.readCheckpoint()
+                    yield [time, eventDriver, checkpoint];
+                }
+                this.bufferIndex = this.consumeIndex;
+            }
+        }
+    }
+
+    private readTelemetry() {
+        const info1 = this.readInteger();
+        const info2 = this.readInteger();
+        const speed = this.takeBytes(5);
+        this.skip(23); // Unknown
+        const tcAndBrakes = this.readInteger(1);
+        const x = this.readFloat();
+        const y = this.readFloat();
+        const z = this.readFloat();
+        const roll = this.readFloat();
+        const pitch = this.readFloat();
+        const yaw = this.readFloat();
+
+        // TODO tcAndBrakes is wrong a little bit
+        // TODO x, y and z are totally wrong
+        // TODO Decode speed
+
+        const steering = info1 & 127;
+        const throttle = (info1 >> 11 & 63) / 0b111111;
+        const rpm = info1 >> 18;
+        const inPit = (info1 >> 17 & 0x1) != 0;
+        const brake = (tcAndBrakes & 63) / 0b111111;
+
+        return {
+            throttle,
+            brake,
+            steering,
+            rpm,
+            inPit,
+        } as Telemetry;
+    }
+
+    private readCheckpoint() {
+        const cumulativeTime = this.readFloat()
+        const timestamp = this.readFloat()
+        const lapNumber = this.readInteger(1)
+        let sector = this.readInteger(1)
+        sector = (sector >> 6) & 3
+        if (sector == 0)
+            sector = 3
+        return {
+            cumulativeTime,
+            lapNumber,
+            sector,
+            timestamp
+        } as Checkpoint;
+    }
+
+    private ensureBytes(count: number) {
+        const countAvailable = this.consumeIndex - this.bufferIndex;
+        if (countAvailable < count) {
+            this.consumeIndex += count - countAvailable;
+        }
+    }
+
+    private takeBytes(count: number) {
+        this.ensureBytes(count);
+        const bytes = Array.from(this.data.subarray(this.bufferIndex, this.bufferIndex + count));
+        this.bufferIndex += count;
+        return bytes;
     }
 
     private readNullTerminatedString(maxBytes: number): string {
@@ -145,8 +230,9 @@ export default class Replay {
     }
 
     private skip(size: number) {
-        this.consumeIndex += size;
-        this.bufferIndex = this.consumeIndex;
+        this.bufferIndex += size;
+        if (this.consumeIndex < this.bufferIndex)
+            this.consumeIndex = this.bufferIndex;
     }
 
     private readStringWholeBuffer(): string {
@@ -159,20 +245,19 @@ export default class Replay {
     }
 
     private readFloat(littleEndian: boolean = true): number {
-        this.bufferIndex = this.consumeIndex;
-        this.consumeIndex += 4;
+        this.ensureBytes(4);
         const view = new DataView(this.data.buffer, this.bufferIndex, 4);
         const number = view.getFloat32(0, littleEndian);
-        this.bufferIndex = this.consumeIndex;
+        this.bufferIndex += 4;
         return number;
     }
 
     private readInteger(size: number = 4, littleEndian: boolean = true): number {
         if (size == 3) size = 4;
 
-        this.consumeIndex += size;
+        this.ensureBytes(size);
         const view = new DataView(this.data.buffer, this.bufferIndex, size);
-        this.bufferIndex = this.consumeIndex;
+        this.bufferIndex += size;
         if (size == 1)
             return view.getUint8(0);
         else if (size == 2)
@@ -235,4 +320,20 @@ class Driver {
     vehicleFilename: string
     timeEntry: number
     timeExit: number
+}
+
+
+class Telemetry {
+    throttle: number
+    brake: number
+    steering: number
+    rpm: number
+    inPit: boolean
+}
+
+class Checkpoint {
+    cumulativeTime: number
+    lapNumber: number
+    sector: number
+    timestamp: number
 }
