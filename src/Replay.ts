@@ -139,11 +139,11 @@ export class Replay {
                 this.ensureBytes(eventSize);
                 if (eventClass == 0 && 7 <= eventType && eventType <= 16) {
                     const telemetry = this.readTelemetry()
-                    yield [time, eventDriver, { type: ReplayEventType.TELEMETRY, data: telemetry } as ReplayEvent];
+                    yield { time: time, driverNumber: eventDriver, type: ReplayEventType.TELEMETRY, data: telemetry } as ReplayEvent;
                 }
                 else if (eventClass == 3 && eventType == 6) {
                     const checkpoint = this.readCheckpoint()
-                    yield [time, eventDriver, { type: ReplayEventType.CHECKPOINT, data: checkpoint } as ReplayEvent];
+                    yield { time: time, driverNumber: eventDriver, type: ReplayEventType.CHECKPOINT, data: checkpoint } as ReplayEvent;
                 }
                 // TODO Handle other event classes and types
                 this.bufferIndex = this.consumeIndex;
@@ -346,5 +346,7 @@ export enum ReplayEventType {
 
 export class ReplayEvent {
     type: ReplayEventType
+    time: number
+    driverNumber: number
     data: any
 }
