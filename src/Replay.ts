@@ -101,17 +101,20 @@ export class Replay {
             timeEntry = null;
             timeExit = null;
 
-            this.drivers[number] = {
+            this.drivers.set(
                 number,
-                name,
-                codriverName,
-                vehicleName,
-                vehicleVersion,
-                vehicleId,
-                vehicleFilename,
-                timeEntry,
-                timeExit,
-            } as Driver;
+                {
+                    number,
+                    name,
+                    codriverName,
+                    vehicleName,
+                    vehicleVersion,
+                    vehicleId,
+                    vehicleFilename,
+                    timeEntry,
+                    timeExit,
+                } as Driver
+            );
         }
     }
 
