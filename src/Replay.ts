@@ -2,7 +2,7 @@
 export class Replay {
 
     version: string;
-    drivers: Array<Driver>;
+    drivers: Map<number, Driver>;
     sliceCount: number;
     eventCountTotal: number;
     timeStart: number;
@@ -83,7 +83,7 @@ export class Replay {
     }
 
     private readDriverList() {
-        this.drivers = [];
+        this.drivers = new Map<number, Driver>();
         const driverCount = this.readInteger();
         for (let i = 0; i < driverCount; ++i) {
             const number = this.readInteger(1);
@@ -101,7 +101,7 @@ export class Replay {
             timeEntry = null;
             timeExit = null;
 
-            this.drivers.push({
+            this.drivers[number] = {
                 number,
                 name,
                 codriverName,
@@ -111,7 +111,7 @@ export class Replay {
                 vehicleFilename,
                 timeEntry,
                 timeExit,
-            } as Driver)
+            } as Driver;
         }
     }
 
