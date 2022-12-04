@@ -145,6 +145,7 @@ export default class Replay {
                     const checkpoint = this.readCheckpoint()
                     yield [time, eventDriver, checkpoint];
                 }
+                // TODO Handle other event classes and types
                 this.bufferIndex = this.consumeIndex;
             }
         }
