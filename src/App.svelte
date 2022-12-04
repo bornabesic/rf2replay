@@ -5,6 +5,7 @@
     // https://github.com/vitejs/vite/issues/4586
     import MainWorker from "./worker?worker";
     import { setContext } from "svelte";
+    import Dygraph from "dygraphs";
 
     let worker = new MainWorker();
     setContext("worker", worker);
@@ -29,6 +30,29 @@
         const message = event.data;
         if (message.type == "driverLapData") {
             driverLapData = message.data;
+
+            const data = driverLapData[1][0];
+            const count = data.time.length;
+            const throttleData = [];
+            const brakeData = [];
+            for (let i = 0; i < count; ++i) {
+                throttleData.push([data.time[i], data.throttle[i]]);
+                brakeData.push([data.time[i], data.brake[i]]);
+            }
+            new Dygraph(
+                document.getElementById("plot-throttle"),
+                throttleData,
+                {
+                    legend: "always",
+                    title: "Throttle",
+                    labels: ["Time", drivers.get(1).name],
+                }
+            );
+            new Dygraph(document.getElementById("plot-brake"), brakeData, {
+                legend: "always",
+                title: "Brake",
+                labels: ["Time", drivers.get(1).name],
+            });
         } else if (message.type == "drivers") {
             drivers = message.data;
         } else if (message.type == "error") {
@@ -40,7 +64,7 @@
     }
 </script>
 
-<main>
+<aside>
     <FilePicker on:fileLoaded={onFileLoaded} />
 
     {#if driverLapData != null}
@@ -57,10 +81,16 @@
             {/each}
         </ul>
     {/if}
+</aside>
+
+<main>
+    <div class="plot" id="plot-throttle" />
+    <div class="plot" id="plot-brake" />
 </main>
 
 <style>
-    main {
-        color: red;
+    .plot {
+        position: relative;
+        width: 100% !important;
     }
 </style>
