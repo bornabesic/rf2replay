@@ -11,7 +11,8 @@
     setContext("worker", worker);
 
     let drivers = null;
-    let driverLapData = null;
+    let driverLapData: Map<number, Map<number, any>> = null;
+    const selectedLaps = new Set<any[]>();
 
     function onFileLoaded(event: CustomEvent<Uint8Array>) {
         const data = event.detail;
@@ -30,29 +31,6 @@
         const message = event.data;
         if (message.type == "driverLapData") {
             driverLapData = message.data;
-
-            const data = driverLapData[1][0];
-            const count = data.time.length;
-            const throttleData = [];
-            const brakeData = [];
-            for (let i = 0; i < count; ++i) {
-                throttleData.push([data.time[i], data.throttle[i]]);
-                brakeData.push([data.time[i], data.brake[i]]);
-            }
-            new Dygraph(
-                document.getElementById("plot-throttle"),
-                throttleData,
-                {
-                    legend: "always",
-                    title: "Throttle",
-                    labels: ["Time", drivers.get(1).name],
-                }
-            );
-            new Dygraph(document.getElementById("plot-brake"), brakeData, {
-                legend: "always",
-                title: "Brake",
-                labels: ["Time", drivers.get(1).name],
-            });
         } else if (message.type == "drivers") {
             drivers = message.data;
         } else if (message.type == "error") {
@@ -62,7 +40,72 @@
             worker.removeEventListener("message", onData);
         }
     }
+
+    function onLapSelectionChange(
+        driverNumber: number,
+        lapNumber: number,
+        event: Event
+    ) {
+        const checkbox = event.target as HTMLInputElement;
+        const element = [driverNumber, lapNumber];
+        if (checkbox.checked) selectedLaps.add(element);
+        else selectedLaps.delete(element);
+        updatePlotData();
+    }
+
+    function updatePlotData() {
+        const divThrottle = document.getElementById("plot-throttle");
+        const divBrake = document.getElementById("plot-brake");
+        removeAllChildren(divThrottle);
+        removeAllChildren(divBrake);
+
+        const throttleData = [];
+        const brakeData = [];
+        const labels = ["Time"];
+
+        let index = 0;
+        for (const [driverNumber, lapNumber] of selectedLaps.values()) {
+            const data = driverLapData.get(driverNumber).get(lapNumber);
+            const count = data.time.length;
+
+            labels.push(`${drivers.get(driverNumber).name} (Lap ${lapNumber})`);
+            for (let i = 0; i < count; ++i) {
+                const throttle = new Array(1 + selectedLaps.size).fill(null);
+                const brake = new Array(1 + selectedLaps.size).fill(null);
+                throttle[0] = data.time[i] - data.timeStartLap;
+                brake[0] = data.time[i] - data.timeStartLap;
+                throttle[index + 1] = data.throttle[i];
+                brake[index + 1] = data.brake[i];
+                throttleData.push(throttle);
+                brakeData.push(brake);
+            }
+            index++;
+        }
+        const plots = [
+            new Dygraph(divThrottle, throttleData, {
+                legend: "always",
+                title: "Throttle",
+                labels: labels,
+            }),
+            new Dygraph(divBrake, brakeData, {
+                legend: "always",
+                title: "Brake",
+                labels: labels,
+            }),
+        ];
+    }
+
+    function removeAllChildren(parent: HTMLElement) {
+        while (parent.lastChild) {
+            parent.removeChild(parent.lastChild);
+        }
+    }
 </script>
+
+<main>
+    <div class="plot" id="plot-throttle" />
+    <div class="plot" id="plot-brake" />
+</main>
 
 <aside>
     <FilePicker on:fileLoaded={onFileLoaded} />
@@ -71,10 +114,21 @@
         <ul>
             {#each [...drivers.values()] as driver}
                 <li>{driver.number} - {driver.name}</li>
-                {#if driver.number in driverLapData}
+                {#if driverLapData.has(driver.number)}
                     <ul>
-                        {#each Object.entries(driverLapData[driver.number]) as [lapNumber, _]}
-                            <li>Lap {lapNumber}</li>
+                        {#each [...driverLapData.get(driver.number)] as [lapNumber, _]}
+                            <li>
+                                Lap {lapNumber}
+                                <input
+                                    type="checkbox"
+                                    on:change={(event) =>
+                                        onLapSelectionChange(
+                                            driver.number,
+                                            lapNumber,
+                                            event
+                                        )}
+                                />
+                            </li>
                         {/each}
                     </ul>
                 {/if}
@@ -82,11 +136,6 @@
         </ul>
     {/if}
 </aside>
-
-<main>
-    <div class="plot" id="plot-throttle" />
-    <div class="plot" id="plot-brake" />
-</main>
 
 <style>
     .plot {
