@@ -1,5 +1,5 @@
 
-export default class Replay {
+export class Replay {
 
     version: string;
     drivers: Array<Driver>;
@@ -139,11 +139,11 @@ export default class Replay {
                 this.ensureBytes(eventSize);
                 if (eventClass == 0 && 7 <= eventType && eventType <= 16) {
                     const telemetry = this.readTelemetry()
-                    yield [time, eventDriver, telemetry];
+                    yield [time, eventDriver, { type: ReplayEventType.TELEMETRY, data: telemetry } as ReplayEvent];
                 }
                 else if (eventClass == 3 && eventType == 6) {
                     const checkpoint = this.readCheckpoint()
-                    yield [time, eventDriver, checkpoint];
+                    yield [time, eventDriver, { type: ReplayEventType.CHECKPOINT, data: checkpoint } as ReplayEvent];
                 }
                 // TODO Handle other event classes and types
                 this.bufferIndex = this.consumeIndex;
@@ -303,7 +303,7 @@ export default class Replay {
     }
 }
 
-enum SessionType {
+export enum SessionType {
     TEST_DAY,
     PRACTICE,
     QUALIFYING,
@@ -311,7 +311,7 @@ enum SessionType {
     RACE,
 }
 
-class Driver {
+export class Driver {
     number: number
     name: string
     codriverName: string
@@ -324,7 +324,7 @@ class Driver {
 }
 
 
-class Telemetry {
+export class Telemetry {
     throttle: number
     brake: number
     steering: number
@@ -332,9 +332,19 @@ class Telemetry {
     inPit: boolean
 }
 
-class Checkpoint {
+export class Checkpoint {
     cumulativeTime: number
     lapNumber: number
     sector: number
     timestamp: number
+}
+
+export enum ReplayEventType {
+    TELEMETRY,
+    CHECKPOINT,
+}
+
+export class ReplayEvent {
+    type: ReplayEventType
+    data: any
 }
