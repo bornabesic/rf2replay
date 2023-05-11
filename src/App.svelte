@@ -74,10 +74,7 @@
     }
 
     function updatePlotData() {
-        const divThrottle = document.getElementById("plot-throttle");
-        const divBrake = document.getElementById("plot-brake");
-        removeAllChildren(divThrottle);
-        removeAllChildren(divBrake);
+        clearPlots();
 
         const throttleData = [];
         const brakeData = [];
@@ -108,6 +105,9 @@
                 index++;
             }
         }
+
+        const divThrottle = document.getElementById("plot-throttle");
+        const divBrake = document.getElementById("plot-brake");
         const plots = [
             new Dygraph(divThrottle, throttleData, {
                 legend: "always",
@@ -120,6 +120,13 @@
                 labels: labels,
             }),
         ];
+    }
+
+    function clearPlots() {
+        const divThrottle = document.getElementById("plot-throttle");
+        const divBrake = document.getElementById("plot-brake");
+        removeAllChildren(divThrottle);
+        removeAllChildren(divBrake);
     }
 
     function removeAllChildren(parent: HTMLElement) {
@@ -140,7 +147,10 @@
     <HeaderUtilities>
         <FilePicker
             on:fileLoaded={onFileLoaded}
-            on:fileSelected={() => (isLoading = true)}
+            on:fileSelected={() => {
+                clearPlots();
+                isLoading = true;
+            }}
         />
     </HeaderUtilities>
 </Header>
