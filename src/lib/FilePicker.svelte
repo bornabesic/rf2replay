@@ -1,14 +1,19 @@
 <script lang="ts">
     import { createEventDispatcher, getContext } from "svelte";
+    import { FileUploaderButton } from "carbon-components-svelte";
 
     const dispatch = createEventDispatcher();
     const worker: Worker = getContext("worker");
 
-    let fileInput: HTMLInputElement;
+    let fileInput: FileUploaderButton;
+    let files: Array<File>;
 
     function onFileSelected() {
-        const file: File = fileInput.files.item(0);
+        const file: File = files[0];
         fileInput.disabled = true;
+
+        dispatch("fileSelected");
+
         file.arrayBuffer().then((data: ArrayBuffer) => {
             const bytes = new Uint8Array(data);
             const isCompressed = bytes.at(0) === 0x1f && bytes.at(1) === 0x8b; // gzip magic
@@ -35,4 +40,9 @@
     }
 </script>
 
-<input type="file" bind:this={fileInput} on:change={onFileSelected} />
+<FileUploaderButton
+    labelText="Select a replay file"
+    bind:this={fileInput}
+    bind:files={files}
+    on:change={onFileSelected}
+/>
