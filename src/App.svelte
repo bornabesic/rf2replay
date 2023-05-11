@@ -9,6 +9,9 @@
         SideNavMenuItem,
         Loading,
         HeaderUtilities,
+        Grid,
+        Row,
+        Column,
     } from "carbon-components-svelte";
     import FilePicker from "./lib/FilePicker.svelte";
 
@@ -185,8 +188,18 @@
 {/if}
 
 <Content>
-    <div class="plot" id="plot-throttle" />
-    <div class="plot" id="plot-brake" />
+    <Grid noGutter={true}>
+        <Row padding={true} noGutter={true}>
+            <Column noGutter={true}>
+                <div class="plot" id="plot-throttle" />
+            </Column>
+        </Row>
+        <Row padding={true} noGutter={true}>
+            <Column noGutter={true}>
+                <div class="plot" id="plot-brake" />
+            </Column>
+        </Row>
+    </Grid>
 </Content>
 
 <style>
