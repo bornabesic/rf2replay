@@ -152,7 +152,7 @@
     }
 </script>
 
-<Header company="Borna Bešić's" platformName="rF2 Replay">
+<Header platformName="rF2 Replay">
     <HeaderUtilities>
         <FilePicker
             on:fileLoaded={onFileLoaded}
