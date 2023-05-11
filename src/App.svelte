@@ -12,7 +12,7 @@
 
     let drivers = null;
     let driverLapData: Map<number, Map<number, any>> = null;
-    const selectedLaps = new Set<any[]>();
+    const selectedLaps = new Map<number, Set<number>>();
 
     function onFileLoaded(event: CustomEvent<Uint8Array>) {
         const data = event.detail;
@@ -47,9 +47,15 @@
         event: Event
     ) {
         const checkbox = event.target as HTMLInputElement;
-        const element = [driverNumber, lapNumber];
-        if (checkbox.checked) selectedLaps.add(element);
-        else selectedLaps.delete(element);
+
+        if (!selectedLaps.has(driverNumber))
+            selectedLaps.set(driverNumber, new Set<number>()); 
+
+
+        const selectedDriverLaps = selectedLaps.get(driverNumber);
+        if (checkbox.checked) selectedDriverLaps.add(lapNumber);
+        else selectedDriverLaps.delete(lapNumber);
+
         updatePlotData();
     }
 
@@ -64,22 +70,24 @@
         const labels = ["Time"];
 
         let index = 0;
-        for (const [driverNumber, lapNumber] of selectedLaps.values()) {
-            const data = driverLapData.get(driverNumber).get(lapNumber);
-            const count = data.time.length;
+        for (const [driverNumber, lapNumbers] of selectedLaps) {
+            for (const lapNumber of lapNumbers) {
+                const data = driverLapData.get(driverNumber).get(lapNumber);
+                const count = data.time.length;
 
-            labels.push(`${drivers.get(driverNumber).name} (Lap ${lapNumber})`);
-            for (let i = 0; i < count; ++i) {
-                const throttle = new Array(1 + selectedLaps.size).fill(null);
-                const brake = new Array(1 + selectedLaps.size).fill(null);
-                throttle[0] = data.time[i] - data.timeStartLap;
-                brake[0] = data.time[i] - data.timeStartLap;
-                throttle[index + 1] = data.throttle[i];
-                brake[index + 1] = data.brake[i];
-                throttleData.push(throttle);
-                brakeData.push(brake);
+                labels.push(`${drivers.get(driverNumber).name} (Lap ${lapNumber})`);
+                for (let i = 0; i < count; ++i) {
+                    const throttle = new Array(1 + selectedLaps.size).fill(null);
+                    const brake = new Array(1 + selectedLaps.size).fill(null);
+                    throttle[0] = data.time[i] - data.timeStartLap;
+                    brake[0] = data.time[i] - data.timeStartLap;
+                    throttle[index + 1] = data.throttle[i];
+                    brake[index + 1] = data.brake[i];
+                    throttleData.push(throttle);
+                    brakeData.push(brake);
+                }
+                index++;
             }
-            index++;
         }
         const plots = [
             new Dygraph(divThrottle, throttleData, {
