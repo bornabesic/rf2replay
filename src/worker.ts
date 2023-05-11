@@ -29,7 +29,7 @@ function decompress(bytes: Uint8Array) {
 }
 
 function getDriverLapData(replay: Replay) {
-    const driverLapData = {};
+    const driverLapData = new Map<number, Map<number, any>>();
     const telemetryData = {};
     postMessage({
         type: "drivers",
@@ -64,22 +64,25 @@ function getDriverLapData(replay: Replay) {
             const indexEnd = driverTelemetryData.time.findIndex(
                 (time: number) => time > timeEndLap
             );
-            if (!(event.driverNumber in driverLapData)) {
-                driverLapData[event.driverNumber] = {};
+            if (!driverLapData.has(event.driverNumber)) {
+                driverLapData.set(event.driverNumber, new Map<number, Object>());
             }
-            driverLapData[event.driverNumber][checkpoint.lapNumber] = {
-                timeStartLap,
-                timeEndLap,
-                time: driverTelemetryData.time.slice(indexStart, indexEnd),
-                throttle: driverTelemetryData.throttle.slice(
-                    indexStart,
-                    indexEnd
-                ),
-                brake: driverTelemetryData.brake.slice(
-                    indexStart,
-                    indexEnd
-                ),
-            };
+            driverLapData.get(event.driverNumber).set(
+                checkpoint.lapNumber,
+                {
+                    timeStartLap,
+                    timeEndLap,
+                    time: driverTelemetryData.time.slice(indexStart, indexEnd),
+                    throttle: driverTelemetryData.throttle.slice(
+                        indexStart,
+                        indexEnd
+                    ),
+                    brake: driverTelemetryData.brake.slice(
+                        indexStart,
+                        indexEnd
+                    ),
+                }
+            );
         }
     }
     postMessage({
