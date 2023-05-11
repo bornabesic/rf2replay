@@ -1,4 +1,14 @@
 <script lang="ts">
+    import "carbon-components-svelte/css/g90.css";
+    import {
+        Header,
+        Content,
+        SideNav,
+        SideNavItems,
+        SideNavMenu,
+        SideNavMenuItem,
+        Loading,
+    } from "carbon-components-svelte";
     import FilePicker from "./lib/FilePicker.svelte";
 
     // NOTE Firefox does not support import statements in web workers so it only works in the production build
@@ -6,6 +16,8 @@
     import MainWorker from "./worker?worker";
     import { setContext } from "svelte";
     import Dygraph from "dygraphs";
+
+    let isLoading = false;
 
     let worker = new MainWorker();
     setContext("worker", worker);
@@ -15,6 +27,8 @@
     const selectedLaps = new Map<number, Set<number>>();
 
     function onFileLoaded(event: CustomEvent<Uint8Array>) {
+        isLoading = false;
+
         const data = event.detail;
 
         drivers = null;
@@ -31,6 +45,7 @@
         const message = event.data;
         if (message.type == "driverLapData") {
             driverLapData = message.data;
+            updatePlotData();
         } else if (message.type == "drivers") {
             drivers = message.data;
         } else if (message.type == "error") {
@@ -49,8 +64,7 @@
         const checkbox = event.target as HTMLInputElement;
 
         if (!selectedLaps.has(driverNumber))
-            selectedLaps.set(driverNumber, new Set<number>()); 
-
+            selectedLaps.set(driverNumber, new Set<number>());
 
         const selectedDriverLaps = selectedLaps.get(driverNumber);
         if (checkbox.checked) selectedDriverLaps.add(lapNumber);
@@ -76,7 +90,9 @@
                 const data = driverLapData.get(driverNumber).get(lapNumber);
                 const count = data.time.length;
 
-                labels.push(`${drivers.get(driverNumber).name} (Lap ${lapNumber})`);
+                labels.push(
+                    `${drivers.get(driverNumber).name} (Lap ${lapNumber})`
+                );
                 for (let i = 0; i < count; ++i) {
                     const throttle = new Array(1 + numSelectedLaps).fill(null);
                     const brake = new Array(1 + numSelectedLaps).fill(null);
@@ -124,33 +140,43 @@
 </main>
 
 <aside>
-    <FilePicker on:fileLoaded={onFileLoaded} />
+    <Header company="Borna Bešić's" platformName="rF2 Replay" />
+
+    <Loading active={isLoading} />
 
     {#if driverLapData != null}
-        <ul>
-            {#each [...drivers.values()] as driver}
-                <li>{driver.number} - {driver.name}</li>
-                {#if driverLapData.has(driver.number)}
-                    <ul>
-                        {#each [...driverLapData.get(driver.number)] as [lapNumber, _]}
-                            <li>
-                                Lap {lapNumber}
-                                <input
-                                    type="checkbox"
-                                    on:change={(event) =>
-                                        onLapSelectionChange(
-                                            driver.number,
-                                            lapNumber,
-                                            event
-                                        )}
-                                />
-                            </li>
-                        {/each}
-                    </ul>
-                {/if}
-            {/each}
-        </ul>
+        <SideNav isOpen={true}>
+            <SideNavItems>
+                {#each [...drivers.values()] as driver}
+                    {#if driverLapData.has(driver.number)}
+                        <SideNavMenu text="{driver.number} - {driver.name}">
+                            {#each [...driverLapData.get(driver.number)] as [lapNumber, _]}
+                                <SideNavMenuItem>
+                                    Lap {lapNumber}
+                                    <input
+                                        type="checkbox"
+                                        on:change={(event) =>
+                                            onLapSelectionChange(
+                                                driver.number,
+                                                lapNumber,
+                                                event
+                                            )}
+                                    />
+                                </SideNavMenuItem>
+                            {/each}
+                        </SideNavMenu>
+                    {/if}
+                {/each}
+            </SideNavItems>
+        </SideNav>
     {/if}
+
+    <Content>
+        <FilePicker
+            on:fileLoaded={onFileLoaded}
+            on:fileSelected={() => (isLoading = true)}
+        />
+    </Content>
 </aside>
 
 <style>

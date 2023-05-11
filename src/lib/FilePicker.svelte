@@ -9,6 +9,9 @@
     function onFileSelected() {
         const file: File = fileInput.files.item(0);
         fileInput.disabled = true;
+
+        dispatch("fileSelected");
+
         file.arrayBuffer().then((data: ArrayBuffer) => {
             const bytes = new Uint8Array(data);
             const isCompressed = bytes.at(0) === 0x1f && bytes.at(1) === 0x8b; // gzip magic
