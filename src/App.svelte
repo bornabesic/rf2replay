@@ -69,6 +69,7 @@
         const brakeData = [];
         const labels = ["Time"];
 
+        const numSelectedLaps = getNumberOfSelectedLaps();
         let index = 0;
         for (const [driverNumber, lapNumbers] of selectedLaps) {
             for (const lapNumber of lapNumbers) {
@@ -77,8 +78,8 @@
 
                 labels.push(`${drivers.get(driverNumber).name} (Lap ${lapNumber})`);
                 for (let i = 0; i < count; ++i) {
-                    const throttle = new Array(1 + selectedLaps.size).fill(null);
-                    const brake = new Array(1 + selectedLaps.size).fill(null);
+                    const throttle = new Array(1 + numSelectedLaps).fill(null);
+                    const brake = new Array(1 + numSelectedLaps).fill(null);
                     throttle[0] = data.time[i] - data.timeStartLap;
                     brake[0] = data.time[i] - data.timeStartLap;
                     throttle[index + 1] = data.throttle[i];
@@ -107,6 +108,13 @@
         while (parent.lastChild) {
             parent.removeChild(parent.lastChild);
         }
+    }
+
+    function getNumberOfSelectedLaps(): number {
+        let numSelectedLaps = 0;
+        for (const selectedDriverLaps of selectedLaps.values())
+            numSelectedLaps += selectedDriverLaps.size;
+        return numSelectedLaps;
     }
 </script>
 
