@@ -45,7 +45,6 @@
         const message = event.data;
         if (message.type == "driverLapData") {
             driverLapData = message.data;
-            updatePlotData();
         } else if (message.type == "drivers") {
             drivers = message.data;
         } else if (message.type == "error") {
@@ -84,6 +83,9 @@
         const labels = ["Time"];
 
         const numSelectedLaps = getNumberOfSelectedLaps();
+        if (numSelectedLaps == 0)
+            return;
+
         let index = 0;
         for (const [driverNumber, lapNumbers] of selectedLaps) {
             for (const lapNumber of lapNumbers) {
@@ -134,50 +136,47 @@
     }
 </script>
 
-<main>
+<Header company="Borna Bešić's" platformName="rF2 Replay" />
+
+<Loading active={isLoading} />
+
+{#if driverLapData != null}
+    <SideNav isOpen={true}>
+        <SideNavItems>
+            {#each [...drivers.values()] as driver}
+                {#if driverLapData.has(driver.number)}
+                    <SideNavMenu text="{driver.number} - {driver.name}">
+                        {#each [...driverLapData.get(driver.number)] as [lapNumber, _]}
+                            <SideNavMenuItem>
+                                Lap {lapNumber}
+                                <input
+                                    type="checkbox"
+                                    on:change={(event) =>
+                                        onLapSelectionChange(
+                                            driver.number,
+                                            lapNumber,
+                                            event
+                                        )}
+                                />
+                            </SideNavMenuItem>
+                        {/each}
+                    </SideNavMenu>
+                {/if}
+            {/each}
+        </SideNavItems>
+    </SideNav>
+{/if}
+
+<Content>
     <div class="plot" id="plot-throttle" />
     <div class="plot" id="plot-brake" />
-</main>
 
-<aside>
-    <Header company="Borna Bešić's" platformName="rF2 Replay" />
+    <FilePicker
+        on:fileLoaded={onFileLoaded}
+        on:fileSelected={() => (isLoading = true)}
+    />
+</Content>
 
-    <Loading active={isLoading} />
-
-    {#if driverLapData != null}
-        <SideNav isOpen={true}>
-            <SideNavItems>
-                {#each [...drivers.values()] as driver}
-                    {#if driverLapData.has(driver.number)}
-                        <SideNavMenu text="{driver.number} - {driver.name}">
-                            {#each [...driverLapData.get(driver.number)] as [lapNumber, _]}
-                                <SideNavMenuItem>
-                                    Lap {lapNumber}
-                                    <input
-                                        type="checkbox"
-                                        on:change={(event) =>
-                                            onLapSelectionChange(
-                                                driver.number,
-                                                lapNumber,
-                                                event
-                                            )}
-                                    />
-                                </SideNavMenuItem>
-                            {/each}
-                        </SideNavMenu>
-                    {/if}
-                {/each}
-            </SideNavItems>
-        </SideNav>
-    {/if}
-
-    <Content>
-        <FilePicker
-            on:fileLoaded={onFileLoaded}
-            on:fileSelected={() => (isLoading = true)}
-        />
-    </Content>
-</aside>
 
 <style>
     .plot {
