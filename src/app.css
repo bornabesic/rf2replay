@@ -1,3 +1,10 @@
+
+.dygraph-legend {
+    padding: 8px;
+    background-color: black;
+    color: white;
+}
+
 .dygraph-axis-label-x, .dygraph-axis-label-y {
     color: white !important;
 }
