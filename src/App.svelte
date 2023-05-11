@@ -118,12 +118,14 @@
                 title: "Throttle",
                 labels: labels,
                 axisLineColor: "white",
+                colorValue: 0.9,
             }),
             new Dygraph(divBrake, brakeData, {
                 legend: "always",
                 title: "Brake",
                 labels: labels,
                 axisLineColor: "white",
+                colorValue: 0.9,
             }),
         ];
     }
