@@ -19,6 +19,6 @@
 }
 
 .bx--side-nav__submenu:hover,
-.bx--checkbox-label-text:hover {
+.bx--side-nav__menu-item:hover .bx--checkbox-label-text {
     color: #525252 !important;
 }
