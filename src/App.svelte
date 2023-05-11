@@ -12,6 +12,7 @@
         Row,
         Column,
         Checkbox,
+        ToastNotification,
     } from "carbon-components-svelte";
     import FilePicker from "./lib/FilePicker.svelte";
 
@@ -22,6 +23,7 @@
     import Dygraph from "dygraphs";
 
     let isLoading = false;
+    let error = null;
 
     let worker = new MainWorker();
     setContext("worker", worker);
@@ -53,7 +55,7 @@
             drivers = message.data;
         } else if (message.type == "error") {
             worker.removeEventListener("message", onData);
-            alert(message.data);
+            error = message.data;
         } else if (message.type == "close") {
             worker.removeEventListener("message", onData);
         }
@@ -157,6 +159,7 @@
             on:fileSelected={() => {
                 clearPlots();
                 isLoading = true;
+                error = null;
             }}
         />
     </HeaderUtilities>
@@ -191,6 +194,14 @@
 {/if}
 
 <Content>
+    {#if error != null}
+        <ToastNotification
+            title="Error"
+            subtitle="Could not load the replay file."
+            caption={error}
+        />
+    {/if}
+
     <Grid noGutter={true}>
         <Row padding={true} noGutter={true}>
             <Column noGutter={true}>
