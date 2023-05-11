@@ -8,6 +8,7 @@
         SideNavMenu,
         SideNavMenuItem,
         Loading,
+        HeaderUtilities,
     } from "carbon-components-svelte";
     import FilePicker from "./lib/FilePicker.svelte";
 
@@ -83,8 +84,7 @@
         const labels = ["Time"];
 
         const numSelectedLaps = getNumberOfSelectedLaps();
-        if (numSelectedLaps == 0)
-            return;
+        if (numSelectedLaps == 0) return;
 
         let index = 0;
         for (const [driverNumber, lapNumbers] of selectedLaps) {
@@ -136,7 +136,14 @@
     }
 </script>
 
-<Header company="Borna Bešić's" platformName="rF2 Replay" />
+<Header company="Borna Bešić's" platformName="rF2 Replay">
+    <HeaderUtilities>
+        <FilePicker
+            on:fileLoaded={onFileLoaded}
+            on:fileSelected={() => (isLoading = true)}
+        />
+    </HeaderUtilities>
+</Header>
 
 <Loading active={isLoading} />
 
@@ -170,13 +177,7 @@
 <Content>
     <div class="plot" id="plot-throttle" />
     <div class="plot" id="plot-brake" />
-
-    <FilePicker
-        on:fileLoaded={onFileLoaded}
-        on:fileSelected={() => (isLoading = true)}
-    />
 </Content>
-
 
 <style>
     .plot {
