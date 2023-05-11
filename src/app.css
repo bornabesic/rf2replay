@@ -1,10 +1,24 @@
-
 .dygraph-legend {
     padding: 8px;
     background-color: black;
     color: white;
 }
 
-.dygraph-axis-label-x, .dygraph-axis-label-y {
+.dygraph-axis-label-x,
+.dygraph-axis-label-y {
     color: white !important;
+}
+
+.bx--side-nav {
+    background: black;
+}
+
+.bx--side-nav__submenu,
+.bx--checkbox-label-text {
+    color: #f4f4f4 !important;
+}
+
+.bx--side-nav__submenu:hover,
+.bx--checkbox-label-text:hover {
+    color: #525252 !important;
 }
