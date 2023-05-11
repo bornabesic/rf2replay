@@ -12,6 +12,7 @@
         Grid,
         Row,
         Column,
+        Checkbox,
     } from "carbon-components-svelte";
     import FilePicker from "./lib/FilePicker.svelte";
 
@@ -170,9 +171,8 @@
                     <SideNavMenu text="{driver.number} - {driver.name}">
                         {#each [...driverLapData.get(driver.number)] as [lapNumber, _]}
                             <SideNavMenuItem>
-                                Lap {lapNumber}
-                                <input
-                                    type="checkbox"
+                                <Checkbox
+                                    labelText="Lap {lapNumber}"
                                     on:change={(event) =>
                                         onLapSelectionChange(
                                             driver.number,
