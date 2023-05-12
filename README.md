@@ -34,6 +34,16 @@ npm run build
 
 Static files are available in `dist/` afterwards.
 
+### Contributing
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag `enhancement`. Don't forget to give the project a star! Thanks again!
+
+1. Fork the project
+2. Create your branch (`git checkout -b dev-awesome-feature`)
+3. Commit your changes (`git commit -m 'Add the best feature ever'`)
+4. Push to the branch (`git push origin dev-awesome-feature`)
+5. Open a pull request
+
 ### Known Issues
 - Firefox does not yet support import statements in web workers (see [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import#browser_compatibility))
     - `npm run dev` does not work, use `npm run prod` instead for developing
