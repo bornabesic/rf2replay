@@ -25,10 +25,11 @@
 
     let fileInput: FileUploaderButton;
     let files: Array<File>;
+    let disabled = false;
 
     function onFileSelected() {
         const file: File = files[0];
-        fileInput.disabled = true;
+        disabled = true;
 
         dispatch("fileSelected");
 
@@ -37,14 +38,14 @@
             const isCompressed = bytes.at(0) === 0x1f && bytes.at(1) === 0x8b; // gzip magic
             if (!isCompressed) {
                 dispatch("fileLoaded", bytes);
-                fileInput.disabled = false;
+                disabled = false;
             } else {
                 const onDecompressedBytes = (
                     event: MessageEvent<Uint8Array>
                 ) => {
                     const bytesDecompressed = event.data;
                     dispatch("fileLoaded", bytesDecompressed);
-                    fileInput.disabled = false;
+                    disabled = false;
                     worker.removeEventListener("message", onDecompressedBytes);
                 };
 
@@ -61,6 +62,7 @@
 <FileUploaderButton
     labelText="Select a replay file"
     bind:this={fileInput}
-    bind:files={files}
+    bind:files
+    bind:disabled
     on:change={onFileSelected}
 />
