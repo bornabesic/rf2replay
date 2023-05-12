@@ -9,7 +9,7 @@ Visualize lap data directly from [rFactor 2](https://store.steampowered.com/app/
 
 ### Features
 - Client-side replay file processing and visualization
-- Throttle and brake telemetry comparison
+- Throttle and brake telemetry comparison (per driver, per lap)
 
 ### Setup
 ```sh
