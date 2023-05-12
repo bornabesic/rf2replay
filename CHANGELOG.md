@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Client-side replay file decompression
+- Client-side replay file decompression and processing
 - Throttle and brake telemetry visualization (per driver, per lap)
 
 [Unreleased]: https://github.com/bornabesic/rf2replay/compare/5c6f97791827b8c2ec533c9dd288b589f3cc51b6...HEAD
